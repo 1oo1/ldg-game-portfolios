@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鹿鼎公游戏仓</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: #f7f9fc;
+      color: #1a1a1a;
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem 1rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.75rem;
+    }
+
+    .panel {
+      width: min(100%, 960px);
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      padding: 1.5rem 2rem;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      margin-bottom: 30px;
+    }
+
+    .panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      color: #111827;
+    }
+
+    .totals {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th,
+    td {
+      padding: 0.75rem 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(107, 114, 128, 0.2);
+    }
+
+    th {
+      color: #374151;
+      font-weight: 600;
+      background: rgba(243, 244, 246, 0.8);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:hover {
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: rgba(199, 31, 99, 0.12);
+      color: #c71f63;
+    }
+
+    .tag.hk,
+    .tag.a,
+    .tag.cash {
+      background: rgba(199, 31, 99, 0.12);
+      color: #c71f63;
+    }
+
+    .cash-row {
+      font-weight: 600;
+      color: #92400e;
+      background: linear-gradient(90deg, rgba(254, 243, 199, 0.5), rgba(249, 250, 251, 0));
+    }
+
+    .value {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .change-cell {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .change {
+      font-weight: 600;
+    }
+
+    .change.up {
+      color: #b91c1c;
+    }
+
+    .change.down {
+      color: #15803d;
+    }
+
+    .change.zero {
+      color: #6b7280;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .pill.new {
+      background: rgba(190, 18, 60, 0.12);
+      color: #be123c;
+    }
+
+    .pill.closed {
+      background: rgba(30, 64, 175, 0.12);
+      color: #1d4ed8;
+    }
+
+    .change-summary {
+      margin-bottom: 0.75rem;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 1.5rem 0.75rem 3rem;
+      }
+
+      .panel {
+        padding: 1.25rem 1rem;
+      }
+
+      th,
+      td {
+        padding: 0.65rem 0.35rem;
+      }
+
+      .value {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script>
+    const data = [
+      {
+        time: "2025-08",
+        portfolios: [
+          { name: "中煤能源", count: 315000, latestValue: 2747084.45, hk: true },
+          { name: "华能国际电力股份", count: 210000, latestValue: 1078079.31, hk: true },
+          { name: "新城发展", count: 400000, latestValue: 933402.00, hk: true },
+          { name: "中国神华", count: 20000, latestValue: 640570.00, hk: true },
+          { name: "中国海洋石油", count: 31000, latestValue: 558567.89, hk: true },
+          { name: "腾讯控股", count: 300, latestValue: 165267.06, hk: true },
+          { name: "神火股份", count: 89900, latestValue: 1735969.00 },
+          { name: "内蒙华电", count: 400000, latestValue: 1620000.00 },
+          { name: "中国神华", count: 32000, latestValue: 1199040.00 },
+          { name: "格力电器", count: 17000, latestValue: 1065000.00 },
+          { name: "银华日利", count: 10000, latestValue: 1008840.00 },
+          { name: "陕西能源", count: 73500, latestValue: 673995.00 },
+          { name: "陕西煤业", count: 32000, latestValue: 652160.00 },
+          { name: "长江电力", count: 20000, latestValue: 561800.00 },
+          { name: "云铝股份", count: 18000, latestValue: 349020.00 },
+          { name: "国投电力", count: 9000, latestValue: 128970.00 },
+          { name: "淮北矿业", count: 5000, latestValue: 62300.00 },
+          { name: "现金", latestValue: 1296686.68 },
+        ]
+      },
+      {
+        time: "2025-09",
+        portfolios: [
+          { name: "中煤能源", count: 315000, latestValue: 2664945.36, hk: true },
+          { name: "华能国际电力股份", count: 210000, latestValue: 1036367.64, hk: true },
+          { name: "新城发展", count: 400000, latestValue: 930249.60, hk: true },
+          { name: "中国海洋石油", count: 31000, latestValue: 538720.73, hk: true },
+          { name: "腾讯控股", count: 300, latestValue: 182112.84, hk: true },
+          { name: "神火股份", count: 89900, latestValue: 1798899.000 },
+          { name: "内蒙华电", count: 400000, latestValue: 1636000.000 },
+          { name: "格力电器", count: 40000, latestValue: 1588800.000 },
+          { name: "中国神华", count: 32000, latestValue: 1232000.000 },
+          { name: "陕西煤业", count: 48000, latestValue: 960000.000 },
+          { name: "长江电力", count: 30000, latestValue: 817500.000 },
+          { name: "陕西能源", count: 73500, latestValue: 657090.000 },
+          { name: "银华日利", count: 5000, latestValue: 504900.000 },
+          { name: "云铝股份", count: 18000, latestValue: 370800.000 },
+          { name: "国投电力", count: 9000, latestValue: 117540.000 },
+          { name: "淮北矿业", count: 5000, latestValue: 61650.000 },
+          { name: "现金", latestValue: 836135.46 }
+        ]
+      },
+    ];
+
+    const numberFormatter = new Intl.NumberFormat("zh-CN", {
+      style: "currency",
+      currency: "CNY",
+      maximumFractionDigits: 2,
+    });
+
+    const percentFormatter = new Intl.NumberFormat("zh-CN", {
+      style: "percent",
+      maximumFractionDigits: 2,
+    });
+
+    const app = document.getElementById("app");
+
+    function createTag(portfolio) {
+      if (portfolio.name === "现金") {
+        return '<span class="tag cash">现金</span>';
+      }
+      return portfolio.hk ? '<span class="tag hk">港股</span>' : '<span class="tag a">A股</span>';
+    }
+
+    function formatCountLabel(item) {
+      if (typeof item.count === "number") {
+        return `${item.name} (${item.count.toLocaleString("zh-CN")})`;
+      }
+      return item.name;
+    }
+
+    function createChangeMarkup(portfolio, prevMap) {
+      if (portfolio.name === "现金") {
+        return '<span class="change zero">--</span>';
+      }
+      const previous = prevMap.get(portfolio.name);
+      if (!previous) {
+        return '<span class="pill new">新增</span>';
+      }
+      const prevCount = typeof previous.count === "number" ? previous.count : 0;
+      const currentCount = typeof portfolio.count === "number" ? portfolio.count : 0;
+      const diff = currentCount - prevCount;
+      if (diff > 0) {
+        return `<span class="change up">+${diff.toLocaleString("zh-CN")}</span>`;
+      }
+      if (diff < 0) {
+        return `<span class="change down">${diff.toLocaleString("zh-CN")}</span>`;
+      }
+      return '<span class="change zero">0</span>';
+    }
+
+    data.forEach((entry, index) => {
+      const prevEntry = index > 0 ? data[index - 1] : null;
+      const prevMap = new Map(prevEntry ? prevEntry.portfolios.map((item) => [item.name, item]) : []);
+      const currentNames = new Set(entry.portfolios.map((item) => item.name));
+      const additions = prevEntry ? entry.portfolios.filter((item) => item.name !== "现金" && !prevMap.has(item.name)) : [];
+      const cleared = prevEntry ? prevEntry.portfolios.filter((item) => item.name !== "现金" && !currentNames.has(item.name)) : [];
+      const summaryText = index === 0 ? "" : [
+        additions.length ? `新增：${additions.map((item) => formatCountLabel(item)).join("、")}` : "",
+        cleared.length ? `清仓：${cleared.map((item) => formatCountLabel(item)).join("、")}` : "",
+      ].filter(Boolean).join("；");
+      const total = entry.portfolios.reduce((sum, item) => sum + item.latestValue, 0);
+      const panel = document.createElement("section");
+      panel.className = "panel";
+
+      const totalText = `总资产 ${numberFormatter.format(total)}`;
+      panel.innerHTML = `
+        <h2>
+          <span>${entry.time}</span>
+          <span class="totals">${totalText}</span>
+        </h2>
+        ${summaryText ? `<div class="change-summary">${summaryText}</div>` : ""}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>标的</th>
+                <th>类型</th>
+                <th>持股数量</th>
+                <th class="change-cell">数量变化</th>
+                <th class="value">市值</th>
+                <th class="value">占比</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${entry.portfolios
+          .map(x => ({ ...x, ratio: x.latestValue / total }))
+          .sort((a, b) => b.ratio - a.ratio)
+          .map((portfolio) => {
+            const tag = createTag(portfolio);
+            const isCash = portfolio.name === "现金";
+            const countText = typeof portfolio.count === "number" ? portfolio.count.toLocaleString("zh-CN") : "--";
+            const changeMarkup = prevEntry ? createChangeMarkup(portfolio, prevMap) : '<span class="change zero">--</span>';
+            return `
+                  <tr class="${isCash ? "cash-row" : ""}">
+                    <td>${portfolio.name}</td>
+                    <td>${tag}</td>
+                    <td>${countText}</td>
+                    <td class="change-cell">${changeMarkup}</td>
+                    <td class="value">${numberFormatter.format(portfolio.latestValue)}</td>
+                    <td class="value">${percentFormatter.format(portfolio.ratio)}</td>
+                  </tr>
+                `;
+          }).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // app.appendChild(panel);
+      app.insertBefore(panel, app.firstChild);
+    });
+  </script>
+</body>
+
+</html>
