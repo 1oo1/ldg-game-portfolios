@@ -325,6 +325,27 @@
           { "name": "淮北矿业", "count": 5000, "latestValue": 67550.000, "hk": false },
           { name: "现金", latestValue: 1086511.44 }
         ]
+      },
+      {
+        time: "2026-03",
+        portfolios: [
+          { "name": "中煤能源", "count": 180000, "latestValue": 2067809.400, "hk": true },
+          { "name": "华能国际电力股份", "count": 280000, "latestValue": 1461188.400, "hk": true },
+          { "name": "新城发展", "count": 550000, "latestValue": 985869.500, "hk": true },
+          { "name": "中国移动", "count": 4000, "latestValue": 279734.400, "hk": true },
+          { "name": "腾讯控股", "count": 300, "latestValue": 128794.380, "hk": true },
+          { "name": "长江电力", "count": 185000, "latestValue": 5002400.000, "hk": false },
+          { "name": "云铝股份", "count": 83000, "latestValue": 2573000.000, "hk": false },
+          { "name": "银华日利", "count": 25000, "latestValue": 2507800.000, "hk": false },
+          { "name": "华能蒙电", "count": 320000, "latestValue": 1638400.000, "hk": false },
+          { "name": "陕西煤业", "count": 50000, "latestValue": 1279500.000, "hk": false },
+          { "name": "陕西能源", "count": 73500, "latestValue": 792330.000, "hk": false },
+          { "name": "中国移动", "count": 2900, "latestValue": 271991.000, "hk": false },
+          { "name": "广发证券", "count": 2000, "latestValue": 35920.000, "hk": false },
+          { "name": "紫金矿业", "count": 1000, "latestValue": 32720.000, "hk": false },
+          { "name": "淮北矿业", "count": 1000, "latestValue": 13550.000, "hk": false },
+          { name: "现金", latestValue: 260133.13 }
+        ]
       }
     ];
 
@@ -348,18 +369,26 @@
       return portfolio.hk ? '<span class="tag hk">港股</span>' : '<span class="tag a">A股</span>';
     }
 
-    function formatCountLabel(item) {
-      if (typeof item.count === "number") {
-        return `${item.name} (${item.count.toLocaleString("zh-CN")})`;
+    function getPortfolioKey(item) {
+      if (item.name === "现金") {
+        return "现金";
       }
-      return item.name;
+      return `${item.hk ? "hk" : "a"}:${item.name}`;
+    }
+
+    function formatCountLabel(item) {
+      const marketLabel = item.name === "现金" ? "" : item.hk ? " 港股" : " A股";
+      if (typeof item.count === "number") {
+        return `${item.name}${marketLabel} (${item.count.toLocaleString("zh-CN")})`;
+      }
+      return `${item.name}${marketLabel}`;
     }
 
     function createChangeMarkup(portfolio, prevMap) {
       if (portfolio.name === "现金") {
         return '<span class="change zero">--</span>';
       }
-      const previous = prevMap.get(portfolio.name);
+      const previous = prevMap.get(getPortfolioKey(portfolio));
       if (!previous) {
         return '<span class="pill new">新增</span>';
       }
@@ -377,10 +406,10 @@
 
     data.forEach((entry, index) => {
       const prevEntry = index > 0 ? data[index - 1] : null;
-      const prevMap = new Map(prevEntry ? prevEntry.portfolios.map((item) => [item.name, item]) : []);
-      const currentNames = new Set(entry.portfolios.map((item) => item.name));
-      const additions = prevEntry ? entry.portfolios.filter((item) => item.name !== "现金" && !prevMap.has(item.name)) : [];
-      const cleared = prevEntry ? prevEntry.portfolios.filter((item) => item.name !== "现金" && !currentNames.has(item.name)) : [];
+      const prevMap = new Map(prevEntry ? prevEntry.portfolios.map((item) => [getPortfolioKey(item), item]) : []);
+      const currentKeys = new Set(entry.portfolios.map((item) => getPortfolioKey(item)));
+      const additions = prevEntry ? entry.portfolios.filter((item) => item.name !== "现金" && !prevMap.has(getPortfolioKey(item))) : [];
+      const cleared = prevEntry ? prevEntry.portfolios.filter((item) => item.name !== "现金" && !currentKeys.has(getPortfolioKey(item))) : [];
       const summaryText = index === 0 ? "" : [
         additions.length ? `新增：${additions.map((item) => formatCountLabel(item)).join("、")}` : "",
         cleared.length ? `清仓：${cleared.map((item) => formatCountLabel(item)).join("、")}` : "",
